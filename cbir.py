@@ -137,13 +137,16 @@ def knn(images, tests, dist_fn):
    
 
 # Calculates the average accuracy and class based accuracies.  
-def accuracy(results):
+def accuracy(results, dist_fn):
     avg_accuracy = (results[1] / results[0]) * 100
-    print("Average accuracy: %" + str(avg_accuracy))
-    print("\nClass based accuracies: \n")
+    out_str = ""
+    out_str += "Average accuracy: %" + str(avg_accuracy) + '\n'
+    out_str += "\nClass based accuracies: \n"
     for key,value in results[2].items():
         acc = (value[0] / value[1]) * 100
-        print(key + " : %" + str(acc))
+        out_str += "\n" + key + " : %" + str(acc)
+    with open(f"stds/{k}_{dist_fn.func_name}", 'w') as f:
+        f.write(out_str)
 
 
 def run(params):
@@ -188,7 +191,7 @@ def run(params):
     results_bowl = knn(bovw_train, bovw_test, dist_fn) 
         
     # Calculates the accuracies and write the results to the console.       
-    accuracy(results_bowl) 
+    accuracy(results_bowl, dist_fn) 
 
     from matplotlib import pyplot as plt
     fig, axes = plt.subplots(6, 2)
@@ -199,5 +202,5 @@ def run(params):
         ax[1].hist(bovw_test[cat], bins=k)
         ax[1].set_title(f'{cat} test histogram')
 
-    plt.savefig(f'plots/{k}_{dist_fn}_histograms.png', dpi=300)
+    plt.savefig(f'plots/{k}_{dist_fn.func_name}_histograms.png', dpi=300)
 
