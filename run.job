@@ -5,7 +5,6 @@
 #SBATCH --cpus-per-task=9          # Schedule one core
 #SBATCH --time=06:00:00            # Run time (hh:mm:ss)
 #SBATCH --partition=red            # Run on either the Red or Brown queue
-#SBATCH --gres=gpu:v100:1          # Schedule a GPU
 #SBATCH --mem=128000               # memory
 
 module load Python/3.9.6-GCCcore-11.2.0
