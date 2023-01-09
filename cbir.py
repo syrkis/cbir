@@ -147,8 +147,8 @@ def accuracy(results):
 
 
 def run(params):
-    k = params[0]
-    dist_fn = params[1]
+    k = params['k']
+    dist_fn = params['dist']
 
     categories = []
     for root, dirs, files in os.walk(dataset_path):

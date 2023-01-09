@@ -13,3 +13,16 @@ SIFT features are extracted by convoling an images with Gausian filters of
 different scales, % Describe this a bit better.
 Afterwards, a vocabulary is contructed by clustering the observered features
 into $n$ words.
+
+# Codebook generation
+Focusing on 20 categories, we performed SIFT feature extraction on each image,
+constructing a feature pool (every feature present in every image).
+We used the OpenCV SIFT implimentation, which yields 1-d vector representation
+of each feature. % confirm that they are 1d?
+As these features exist in the same place they are comparable, and distance can
+be computed between them. Features that are sufficiently close can be grouped
+together into a word (the difference between them can be viewed as similar to 
+accent in human speech).
+
+
+# Indexing
