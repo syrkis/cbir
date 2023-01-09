@@ -7,7 +7,6 @@ import cv2
 import os
 import json
 from scipy import ndimage
-from scipy.spatial import distance
 from sklearn.cluster import KMeans
 from typing import List, T
 from sklearn.model_selection import train_test_split
@@ -15,18 +14,7 @@ from sklearn.model_selection import train_test_split
 
 dataset_path = 'caltech-101/101_ObjectCategories'
 test_size = 0.2
-k = 500
 
-
-categories = []
-for root, dirs, files in os.walk(dataset_path):
-    for dir in dirs:
-        
-        for cat_root, cat_dirs, cat_files in os.walk(os.path.join(dataset_path, dir)):
-            
-            if len(cat_files) >= 100:
-                categories.append(dir)
-                print(dir, len(cat_files))
 
 
 def get_file_paths(dataset_path : str, category : str, test_size : float) -> List[str]:
@@ -70,13 +58,13 @@ def kmeans(k, descriptor_list):
     return visual_words
   
 
-def find_index(feature : np.ndarray, centers : np.ndarray):
+def find_index(feature : np.ndarray, centers : np.ndarray, dist_fn : T):
     # returns an index of the visual word that is the most similar to a feature 
     minimum = 0
     start_min = True 
     min_index = 0 
     for idx, center in enumerate(centers): 
-        distance_c = distance.cosine(center, feature)
+        distance_c = dist_fn(center, feature)
         if start_min:
             minimum = distance_c
             start_min = False 
@@ -92,14 +80,14 @@ def find_index(feature : np.ndarray, centers : np.ndarray):
 # - a dictionary that holds the descriptors that are separated class by class 
 # - an array that holds the central points (visual words) of the k means clustering
 # Returns a dictionary that holds the histograms for each images that are separated class by class. 
-def image_class(all_bovw, centers):
+def image_class(all_bovw, centers, dist_fn):
     bovw = {}
     for key,value in all_bovw.items():
         category = []
         for img in value:
             histogram = np.zeros(len(centers))
             for feature in img:
-                ind = find_index(feature, centers)
+                ind = find_index(feature, centers, dist_fn)
                 histogram[ind] += 1
             category.append(histogram)
         bovw[key] = category
@@ -118,7 +106,7 @@ def save_to_json(file_name, bovw):
 # - images : feature vectors of train images 
 # - tests : feature vectors of test images
 # Returns an array that holds number of test images, number of correctly predicted images and records of class based images respectively
-def knn(images, tests):
+def knn(images, tests, dist_fn):
     num_test = 0
     correct_predict = 0
     class_based = {}
@@ -130,11 +118,11 @@ def knn(images, tests):
             for train_category, train_histograms_list in images.items():
                 for train_histogram in train_histograms_list:
                     if min_start:
-                        minimum = distance.euclidean(test_histogram, train_histogram)
+                        minimum = dist_fn(test_histogram, train_histogram)
                         pred = train_category
                         min_start = False
                     else:
-                        dist = distance.euclidean(test_histogram, train_histogram)
+                        dist = dist_fn(test_histogram, train_histogram)
                         if(dist < minimum):
                             minimum = dist
                             pred = train_category
@@ -158,7 +146,20 @@ def accuracy(results):
         print(key + " : %" + str(acc))
 
 
-def run(param):
+def run(params):
+    k = params[0]
+    dist_fn = params[1]
+
+    categories = []
+    for root, dirs, files in os.walk(dataset_path):
+        for dir in dirs:
+            
+            for cat_root, cat_dirs, cat_files in os.walk(os.path.join(dataset_path, dir)):
+                
+                if len(cat_files) >= 100:
+                    categories.append(dir)
+                    print(dir, len(cat_files))
+
     # creating train and test dataset s 
     train_images = {}
     test_images = {}
@@ -176,15 +177,15 @@ def run(param):
     visual_words = kmeans(k, descriptor_list) 
     
     # Creates histograms for train data    
-    bovw_train = image_class(all_bovw_feature, visual_words) 
+    bovw_train = image_class(all_bovw_feature, visual_words, dist_fn) 
     # Creates histograms for test data
-    bovw_test = image_class(test_bovw_feature, visual_words) 
+    bovw_test = image_class(test_bovw_feature, visual_words, dist_fn)
 
     save_to_json('bovw_test.json', bovw_test)
     save_to_json('bovw_train.json', bovw_train)
  
     # Call the knn function    
-    results_bowl = knn(bovw_train, bovw_test) 
+    results_bowl = knn(bovw_train, bovw_test, dist_fn) 
         
     # Calculates the accuracies and write the results to the console.       
     accuracy(results_bowl) 
@@ -198,5 +199,5 @@ def run(param):
         ax[1].hist(bovw_test[cat], bins=k)
         ax[1].set_title(f'{cat} test histogram')
 
-    plt.savefig('histograms.png', dpi=300)
+    plt.savefig(f'plots/{k}_{dist_fn}_histograms.png', dpi=300)
 
