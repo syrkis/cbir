@@ -15,17 +15,26 @@ Afterwards, a vocabulary is contructed by clustering the observered features
 into $n$ words.
 
 # Codebook generation
-Focusing on 20 categories, we performed SIFT feature extraction on each image,
-constructing a feature pool (every feature present in every image).
-We used the OpenCV SIFT implimentation, which yields 1-d vector representation
-of each feature. % confirm that they are 1d?
-As these features exist in the same place they are comparable, and distance can
-be computed between them. Features that are sufficiently close can be grouped
+Focusing on XXXX categories, we split those into train and test sets each (80/20).
+On the train set we performed SIFT feature extraction on each image,
+constructing a feature matrix M (every feature present in every image).
+We used the OpenCV SIFT implimentation, which yields 1d vector representation
+of each feature, which were stacked to create M. % confirm that they are 1d?
+As these features exist in the same space they are comparable, and distance can
+be computed between them. Features that are sufficiently close can be clustered
 together into a word (the difference between them can be viewed as similar to 
-accent in human speech).
+accent in human speech). We used scikit-learns $k$-means cluster, begging the
+hyper parameter $k$ (which in this case comes to represent covabulary size).
+We ran our code with three different values of $k$: 250, 500, and 1000.
+
+
+
 
 
 # Indexing
+For our indexing step, we first, for each image in the test set, represented
+that image as its SIFT features. Each sift feature was then assigned to the word
+representing its cluster.
 
 # Retrieving
 Bag of Words representation is done by taking an image, reducing it to its SIFT features, and further representing that feature with its most closely associated word (cluster), among the $k$ candidates.

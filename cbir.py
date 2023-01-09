@@ -40,13 +40,14 @@ def load_images(files_paths : List[str]) -> List[np.ndarray]:
 def sift_features(images):
     descriptor_dict = {}
     descriptor_list = []
-    sift = cv2.xfeatures2d.SIFT_create()
+    sift = cv2.SIFT_create()
     for category, cat_images in images.items():
         features = []
         for img in cat_images:
             kp, des = sift.detectAndCompute(img,None)
-            descriptor_list.extend(des)
-            features.append(des)
+            if (des is not None):
+                descriptor_list.extend(des)
+                features.append(des)
         descriptor_dict[category] = features
     return [descriptor_list, descriptor_dict]
 
