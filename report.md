@@ -26,3 +26,7 @@ accent in human speech).
 
 
 # Indexing
+
+# Retrieving
+Bag of Words representation is done by taking an image, reducing it to its SIFT features, and further representing that feature with its most closely associated word (cluster), among the $k$ candidates.
+
